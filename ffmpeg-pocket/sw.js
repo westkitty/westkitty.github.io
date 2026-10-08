@@ -1,4 +1,4 @@
-const APP='ffmpeg-pocket-app-v1';
+const APP='ffmpeg-pocket-app-v2';
 const CORE='ffmpeg-pocket-core-v1';
 const SHELL=['./','./index.html','./manifest.json','./icon.svg'];
 const CORE_PATH='/npm/@ffmpeg/core@0.12.10/dist/umd/';
