@@ -1,15 +1,15 @@
 import {LIMITS, SHAPES, verifySourceDigest, validateRig, validateCues, validateKeyframes, anchorAt, shapeAt, outputDimensions, assertMediaFile, selectAacEncoder, assertMemoryBudget} from './contract.mjs';
 
-// All fetched library URLs have exact immutable npm version pins; app checks
-// SHA-256 of their distributed bytes before invoking them. No uploaded media
-// enters a fetch(), POST, beacon, WebSocket or service worker.
+// Version-pinned dependencies are copied from npm tarballs into same-origin
+// vendor/ by a hash-gated Pages build. User media is never uploaded.
+const local = path => new URL(path, import.meta.url).href;
 const CDN = Object.freeze({
-  lip:'https://cdn.jsdelivr.net/npm/lip-sync-engine@1.0.3/dist/index.mjs',
-  js:'https://cdn.jsdelivr.net/npm/lip-sync-engine@1.0.3/dist/wasm/lip-sync-engine.js',
-  wasm:'https://cdn.jsdelivr.net/npm/lip-sync-engine@1.0.3/dist/wasm/lip-sync-engine.wasm',
-  data:'https://cdn.jsdelivr.net/npm/lip-sync-engine@1.0.3/dist/wasm/lip-sync-engine.data',
-  media:'https://cdn.jsdelivr.net/npm/mediabunny@1.66.2/dist/bundles/mediabunny.mjs',
-  aac:'https://cdn.jsdelivr.net/npm/@mediabunny/aac-encoder@1.66.2/dist/bundles/mediabunny-aac-encoder.mjs'
+  lip:local('./vendor/lip-sync/index.mjs'),
+  js:local('./vendor/lip-sync/lip-sync-engine.js'),
+  wasm:local('./vendor/lip-sync/lip-sync-engine.wasm'),
+  data:local('./vendor/lip-sync/lip-sync-engine.data'),
+  media:local('./vendor/mediabunny/mediabunny.mjs'),
+  aac:local('./vendor/mediabunny/mediabunny-aac-encoder.mjs')
 });
 const LOCKED = Object.freeze({
   lip:'bc9b36a83ea3707cdda4ecaf47d37ebff00a12b2764607c60a5cdb47f9cef198',
@@ -36,8 +36,8 @@ const sha=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA
 function json(text,description){try{return JSON.parse(text)}catch{throw Error(description+' must be valid JSON');}}
 async function verifyPackage(key){
   requireActive();
-  const url=CDN[key];status('Checking pinned library integrity: '+key+(key==='data'?' (37.9 MB)':''));
-  const response=await fetch(url,{cache:'force-cache',signal:active.signal,mode:'cors'});
+  const url=CDN[key];if(new URL(url).origin!==location.origin)throw Error('Library host mismatch');status('Checking local library integrity: '+key+(key==='data'?' (37.9 MB)':''));
+  const response=await fetch(url,{cache:'force-cache',signal:active.signal,mode:'same-origin'});
   if(!response.ok)throw Error('Could not load '+key+' library asset (HTTP '+response.status+')');
   const bytes=await response.arrayBuffer();requireActive();
   if(await sha(bytes)!==LOCKED[key])throw Error('Library asset integrity mismatch: '+key+'. Nothing was run.');
