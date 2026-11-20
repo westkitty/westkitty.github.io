@@ -62,10 +62,10 @@ try:
         assert not page.evaluate('document.documentElement.scrollWidth > window.innerWidth')
         # Consent failure is a real state, not a dead button.
         page.locator('#custom-start').click()
-        page.wait_for_function("document.querySelector('#status').dataset.kind==='error'",timeout=3000)
+        page.locator('#status[data-kind="error"]').wait_for(timeout=3000)
         for kind,button in [('still','#demo-still'),('moving','#demo-moving')]:
             page.locator(button).click()
-            page.wait_for_function("['error','success'].includes(document.querySelector('#status').dataset.kind)",timeout=125000)
+            page.locator('#status[data-kind="success"], #status[data-kind="error"]').wait_for(timeout=125000)
             state=page.locator('#status').inner_text()
             if page.locator('#status').get_attribute('data-kind')!='success':
                 raise AssertionError(f'{kind} rendering failed: {state}; js={failures}')
