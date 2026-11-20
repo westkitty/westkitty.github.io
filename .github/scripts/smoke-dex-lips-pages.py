@@ -69,7 +69,7 @@ try:
             state=page.locator('#status').inner_text()
             if page.locator('#status').get_attribute('data-kind')!='success':
                 raise AssertionError(f'{kind} rendering failed: {state}; js={failures}')
-            receipt=json.loads(page.locator('#receipt').inner_text())
+            receipt=json.loads(page.locator('#receipt').text_content())
             if receipt['realRhubarbCueCount']<2 or receipt['frames']!=48:
                 raise AssertionError(f'{kind} no correct Rhubarb cues/frames: {receipt}')
             if receipt['sourceSHA256']!=receipt['sourceSHA256After']:
