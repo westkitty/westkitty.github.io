@@ -25,6 +25,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install disposable FFmpeg verifier on GitHub runner
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends ffmpeg
+          ffmpeg -version | head -n 1
+          ffprobe -version | head -n 1
       - name: Prepare complete existing site with SHA-locked vendor packages
         shell: bash
         run: bash .github/scripts/build-dex-lips-pages.sh
